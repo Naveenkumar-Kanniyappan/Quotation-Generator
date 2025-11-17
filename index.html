@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c7be5;
+            --secondary-color: #6a75f8;
+            --accent-color: #00a854;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --border-radius: 8px;
+            --box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c7be5 0%, #6a75f8 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .main-container {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .form-section, .preview-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            height: fit-content;
+        }
+        
+        .preview-section {
+            position: sticky;
+            top: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .quotation-container {
+            border: 2px solid #e0e0e0;
+            padding: 20px;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quotation-header {
+            text-align: center;
+            border-bottom: 3px double #333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .quotation-title {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: var(--primary-color);
+        }
+        
+        .quotation-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .quotation-ref {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .company-logo {
+            width: 120px;
+            height: 60px;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .address-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .address-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+            border-radius: 5px;
+        }
+        
+        .address-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        
+        .address-content {
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .quotation-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: #f5f5f5;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            font-size: 12px;
+            color: #555;
+        }
+        
+        .detail-value {
+            font-size: 12px;
+            padding: 5px 10px;
+            background: white;
+            border: 1px solid #ccc;
+            min-width: 120px;
+            border-radius: 4px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 11px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .items-table th {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid var(--primary-color);
+        }
+        
+        .items-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .items-table input {
+            width: 100%;
+            border: none;
+            padding: 6px;
+            font-size: 11px;
+            text-align: center;
+            background: transparent;
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+        
+        .items-table input:focus {
+            background: #ffffcc;
+            outline: 1px solid var(--primary-color);
+            box-shadow: 0 0 5px rgba(44, 123, 229, 0.3);
+        }
+        
+        .terms-section {
+            margin-top: 20px;
+            padding: 12px;
+            background: #f9f9f9;
+            border: 1px dashed #999;
+            font-size: 12px;
+            border-radius: 5px;
+        }
+        
+        .terms-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
+        .tax-breakdown {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        
+        .tax-table {
+            width: 300px;
+            border-collapse: collapse;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .tax-table td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            font-size: 12px;
+        }
+        
+        .tax-table .label {
+            font-weight: bold;
+            background: #f5f5f5;
+        }
+        
+        .tax-table .total {
+            font-weight: bold;
+            font-size: 14px;
+            background: #e8e8e8;
+        }
+        
+        .validity-section {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f8ff;
+            border: 1px solid #cce0ff;
+            font-size: 11px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .validity-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #0066cc;
+        }
+        
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .signature-box {
+            min-width: 150px;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .signature-line {
+            border-bottom: 1px solid #333;
+            height: 40px;
+            margin-bottom: 5px;
+        }
+        
+        .signature-text {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            transition: var(--transition);
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(44, 123, 229, 0.3);
+            outline: none;
+        }
+        
+        .form-group textarea {
+            height: 70px;
+            resize: vertical;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-right: 10px;
+            margin-bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .btn i {
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1a68d1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a65e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .button-group {
+            margin-top: 25px;
+            text-align: center;
+        }
+        
+        .item-actions {
+            margin-top: 15px;
+            text-align: center;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .notification.error {
+            background: var(--danger-color);
+        }
+        
+        .notification.warning {
+            background: var(--warning-color);
+            color: var(--dark-color);
+        }
+        
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80px;
+            color: rgba(0, 0, 0, 0.05);
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            width: 100%;
+            font-weight: 600;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            #printable-quotation, #printable-quotation * {
+                visibility: visible;
+            }
+            
+            #printable-quotation {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .btn, .form-section, .header, .notification, .mobile-menu-btn {
+                display: none !important;
+            }
+            
+            .quotation-container {
+                border: none;
+                box-shadow: none;
+            }
+            
+            .watermark {
+                font-size: 120px;
+            }
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .preview-section {
+                position: static;
+            }
+            
+            .quotation-details {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .detail-item {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .tax-breakdown {
+                justify-content: center;
+            }
+            
+            .tax-table {
+                width: 100%;
+            }
+            
+            .signature-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .signature-box {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .form-section, .preview-section {
+                padding: 20px 15px;
+            }
+            
+            .quotation-container {
+                padding: 15px;
+            }
+            
+            .address-section {
+                flex-direction: column;
+            }
+            
+            .items-table {
+                font-size: 10px;
+            }
+            
+            .items-table th, 
+            .items-table td {
+                padding: 6px 4px;
+            }
+            
+            .watermark {
+                font-size: 60px;
+            }
+            
+            .btn {
+                padding: 8px 15px;
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.7rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .quotation-title {
+                font-size: 20px;
+            }
+            
+            .items-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            .button-group {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-right: 0;
+            }
+            
+            .item-actions {
+                flex-direction: column;
+            }
+            
+            .watermark {
+                font-size: 40px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Quotation Generator</h1>
+            <p>Create professional quotations in minutes</p>
+        </div>
+        
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i> Toggle Sections
+        </button>
+        
+        <div class="main-container">
+            <div class="form-section" id="formSection">
+                <h2 class="section-title">Quotation Details</h2>
+                
+                <div class="form-group">
+                    <label for="companyName"><i class="fas fa-building"></i> Company Name</label>
+                    <input type="text" id="companyName" value="Arasan E-Bikes" onchange="updatePreview()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="companyAddress"><i class="fas fa-map-marker-alt"></i> Company Address</label>
+                    <textarea id="companyAddress" onchange="updatePreview()">123, Business Park, GST Road,
+Chennai - 600001
+Tamil Nadu, India</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="companyContact"><i class="fas fa-phone"></i> Contact Information</label>
+                    <input type="text" id="companyContact" value="Phone: +91-9876543210 | Email: info@arasanev.com" onchange="updatePreview()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerName"><i class="fas fa-user"></i> Customer Name</label>
+                    <input type="text" id="customerName" value="R.PUGALMANI" onchange="updatePreview()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerAddress"><i class="fas fa-map-marker-alt"></i> Customer Address</label>
+                    <textarea id="customerAddress" onchange="updatePreview()">456, Customer Street,
+Anna Nagar,
+Chennai - 600040</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quotationNumber"><i class="fas fa-file-invoice"></i> Quotation Number</label>
+                    <input type="text" id="quotationNumber" value="QT-2023-001" onchange="updatePreview()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="quotationDate"><i class="fas fa-calendar-alt"></i> Quotation Date</label>
+                    <input type="date" id="quotationDate" value="2023-10-18" onchange="updatePreview()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="validUntil"><i class="fas fa-calendar-check"></i> Valid Until</label>
+                    <input type="date" id="validUntil" value="2023-11-18" onchange="updatePreview()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="taxRate"><i class="fas fa-percentage"></i> GST Rate (%)</label>
+                    <select id="taxRate" onchange="updatePreview()">
+                        <option value="0">0%</option>
+                        <option value="5">5%</option>
+                        <option value="12">12%</option>
+                        <option value="18" selected>18%</option>
+                        <option value="28">28%</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="termsConditions"><i class="fas fa-file-contract"></i> Terms & Conditions</label>
+                    <textarea id="termsConditions" onchange="updatePreview()">1. Prices are valid for 30 days from the quotation date.
+2. Delivery within 15 days after order confirmation.
+3. Payment: 50% advance with order, 50% before delivery.
+4. Taxes extra as applicable.</textarea>
+                </div>
+                
+                <h3 class="section-title">Items</h3>
+                <div class="item-actions">
+                    <button class="btn btn-success" onclick="addItem()">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                    <button class="btn btn-danger" onclick="removeItem()">
+                        <i class="fas fa-minus"></i> Remove Item
+                    </button>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="downloadPDF()">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                    <button class="btn btn-primary" onclick="printQuotation()">
+                        <i class="fas fa-print"></i> Print Quotation
+                    </button>
+                    <button class="btn btn-primary" onclick="saveQuotation()">
+                        <i class="fas fa-save"></i> Save Data
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadQuotation()">
+                        <i class="fas fa-folder-open"></i> Load Data
+                    </button>
+                    <button class="btn btn-success" onclick="newQuotation()">
+                        <i class="fas fa-file"></i> New Quotation
+                    </button>
+                </div>
+            </div>
+            
+            <div class="preview-section" id="previewSection">
+                <h2 class="section-title">Quotation Preview</h2>
+                <div class="quotation-container" id="quotationPreview">
+                    <div class="watermark">QUOTATION</div>
+                    
+                    <div class="quotation-header">
+                        <div class="quotation-title">QUOTATION</div>
+                        <div class="quotation-subtitle">Price Quotation for Products/Services</div>
+                        <div class="quotation-ref" id="previewQuotRef">QT-2023-001</div>
+                    </div>
+                    
+                    <div class="address-section">
+                        <div class="address-box">
+                            <div class="address-title">From:</div>
+                            <div class="address-content" id="previewCompany">
+                                <strong>Arasan E-Bikes</strong><br>
+                                123, Business Park, GST Road,<br>
+                                Chennai - 600001<br>
+                                Tamil Nadu, India<br>
+                                Phone: +91-9876543210<br>
+                                Email: info@arasanev.com
+                            </div>
+                        </div>
+                        <div class="address-box">
+                            <div class="address-title">To:</div>
+                            <div class="address-content" id="previewCustomer">
+                                <strong>R.PUGALMANI</strong><br>
+                                456, Customer Street,<br>
+                                Anna Nagar,<br>
+                                Chennai - 600040
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="quotation-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Quotation No:</span>
+                            <span class="detail-value" id="previewQuotNo">QT-2023-001</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Date:</span>
+                            <span class="detail-value" id="previewDate">18-Oct-2023</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Valid Until:</span>
+                            <span class="detail-value" id="previewValidDate">18-Nov-2023</span>
+                        </div>
+                    </div>
+                    
+                    <table class="items-table" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Description</th>
+                                <th>HSN/SAC</th>
+                                <th>Qty</th>
+                                <th>Rate</th>
+                                <th>Per</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" value="WARRIOR LI PRIME - 2" onchange="updatePreview()"></td>
+                                <td><input type="text" value="8517" onchange="updatePreview()"></td>
+                                <td><input type="number" value="1" min="0" step="1" onchange="updatePreview()"></td>
+                                <td><input type="number" value="90000.00" min="0" step="0.01" onchange="updatePreview()"></td>
+                                <td>Nos</td>
+                                <td class="amount">90000.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="tax-breakdown">
+                        <table class="tax-table">
+                            <tr>
+                                <td class="label">Subtotal</td>
+                                <td id="subtotalAmount">90000.00</td>
+                            </tr>
+                            <tr>
+                                <td class="label">CGST (<span id="cgstRate">9</span>%)</td>
+                                <td id="cgstAmount">8100.00</td>
+                            </tr>
+                            <tr>
+                                <td class="label">SGST (<span id="sgstRate">9</span>%)</td>
+                                <td id="sgstAmount">8100.00</td>
+                            </tr>
+                            <tr>
+                                <td class="label">IGST (0%)</td>
+                                <td id="igstAmount">0.00</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Total Tax</td>
+                                <td id="totalTax">16200.00</td>
+                            </tr>
+                            <tr>
+                                <td class="total">Quotation Total</td>
+                                <td class="total" id="quotationTotal">106200.00</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="validity-section">
+                        <div class="validity-title">Quotation Validity</div>
+                        This quotation is valid until <strong id="previewValidUntil">18-Nov-2023</strong>
+                    </div>
+                    
+                    <div class="terms-section">
+                        <div class="terms-title">Terms & Conditions:</div>
+                        <div id="previewTerms">
+                            1. Prices are valid for 30 days from the quotation date.<br>
+                            2. Delivery within 15 days after order confirmation.<br>
+                            3. Payment: 50% advance with order, 50% before delivery.<br>
+                            4. Taxes extra as applicable.
+                        </div>
+                    </div>
+                    
+                    <div class="signature-section">
+                        <div class="signature-box">
+                            <div class="signature-line"></div>
+                            <div class="signature-text">Customer Acceptance</div>
+                        </div>
+                        <div class="signature-box">
+                            <div class="signature-line"></div>
+                            <div class="signature-text">For Arasan E-Bikes</div>
+                            <div style="margin-top: 20px; font-weight: bold;">Authorized Signatory</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+    
+    <!-- Hidden div for printing -->
+    <div id="printable-quotation" style="display: none;"></div>
+    
+    <script>
+        let itemCount = 1;
+        
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            const formSection = document.getElementById('formSection');
+            const previewSection = document.getElementById('previewSection');
+            
+            if (formSection.style.display === 'none') {
+                formSection.style.display = 'block';
+                previewSection.style.display = 'block';
+            } else {
+                formSection.style.display = 'none';
+                previewSection.style.display = 'block';
+            }
+        });
+        
+        function updatePreview() {
+            // Update company details
+            const companyName = document.getElementById('companyName').value;
+            const companyAddress = document.getElementById('companyAddress').value;
+            const companyContact = document.getElementById('companyContact').value;
+            
+            document.getElementById('previewCompany').innerHTML = 
+                `<strong>${companyName}</strong><br>` +
+                companyAddress.replace(/\n/g, '<br>') + '<br>' +
+                companyContact;
+            
+            // Update customer details
+            const customerName = document.getElementById('customerName').value;
+            const customerAddress = document.getElementById('customerAddress').value;
+            
+            document.getElementById('previewCustomer').innerHTML = 
+                `<strong>${customerName}</strong><br>` +
+                customerAddress.replace(/\n/g, '<br>');
+            
+            // Update quotation details
+            document.getElementById('previewQuotNo').textContent = document.getElementById('quotationNumber').value;
+            document.getElementById('previewQuotRef').textContent = document.getElementById('quotationNumber').value;
+            
+            const date = new Date(document.getElementById('quotationDate').value);
+            const formattedDate = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            document.getElementById('previewDate').textContent = formattedDate;
+            
+            const validDate = new Date(document.getElementById('validUntil').value);
+            const formattedValidDate = validDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            document.getElementById('previewValidDate').textContent = formattedValidDate;
+            document.getElementById('previewValidUntil').textContent = formattedValidDate;
+            
+            // Update terms and conditions
+            const terms = document.getElementById('termsConditions').value;
+            document.getElementById('previewTerms').innerHTML = terms.replace(/\n/g, '<br>');
+            
+            // Calculate totals
+            calculateTotals();
+        }
+        
+        function addItem() {
+            itemCount++;
+            const tbody = document.getElementById('itemsBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${itemCount}</td>
+                <td><input type="text" placeholder="Item description" onchange="updatePreview()"></td>
+                <td><input type="text" placeholder="HSN/SAC" onchange="updatePreview()"></td>
+                <td><input type="number" value="1" min="0" step="1" onchange="updatePreview()"></td>
+                <td><input type="number" value="0" min="0" step="0.01" onchange="updatePreview()"></td>
+                <td>Nos</td>
+                <td class="amount">0.00</td>
+            `;
+            tbody.appendChild(newRow);
+            updatePreview();
+            showNotification('Item added successfully');
+        }
+        
+        function removeItem() {
+            const tbody = document.getElementById('itemsBody');
+            if (tbody.rows.length > 1) {
+                tbody.deleteRow(-1);
+                itemCount--;
+                updatePreview();
+                showNotification('Item removed successfully');
+            } else {
+                showNotification('Cannot remove the last item', 'error');
+            }
+        }
+        
+        function calculateTotals() {
+            const rows = document.querySelectorAll('#itemsBody tr');
+            let subtotal = 0;
+            
+            rows.forEach(row => {
+                const qty = parseFloat(row.cells[3].querySelector('input').value) || 0;
+                const rate = parseFloat(row.cells[4].querySelector('input').value) || 0;
+                const amount = qty * rate;
+                row.cells[6].textContent = amount.toFixed(2);
+                subtotal += amount;
+            });
+            
+            const taxRate = parseFloat(document.getElementById('taxRate').value) || 18;
+            const halfTaxRate = taxRate / 2;
+            
+            document.getElementById('cgstRate').textContent = halfTaxRate;
+            document.getElementById('sgstRate').textContent = halfTaxRate;
+            
+            const cgst = subtotal * (halfTaxRate / 100);
+            const sgst = subtotal * (halfTaxRate / 100);
+            const igst = 0;
+            const totalTax = cgst + sgst + igst;
+            const quotationTotal = subtotal + totalTax;
+            
+            document.getElementById('subtotalAmount').textContent = subtotal.toFixed(2);
+            document.getElementById('cgstAmount').textContent = cgst.toFixed(2);
+            document.getElementById('sgstAmount').textContent = sgst.toFixed(2);
+            document.getElementById('igstAmount').textContent = igst.toFixed(2);
+            document.getElementById('totalTax').textContent = totalTax.toFixed(2);
+            document.getElementById('quotationTotal').textContent = quotationTotal.toFixed(2);
+        }
+        
+        function downloadPDF() {
+            showNotification('Generating PDF...', 'warning');
+            
+            // Create a clone of the quotation for PDF generation
+            const quotationElement = document.getElementById('quotationPreview');
+            const clone = quotationElement.cloneNode(true);
+            
+            // Remove input elements and replace with text for PDF
+            const inputs = clone.querySelectorAll('input');
+            inputs.forEach(input => {
+                const span = document.createElement('span');
+                span.textContent = input.value;
+                span.style.display = 'inline-block';
+                span.style.minHeight = '20px';
+                input.parentNode.replaceChild(span, input);
+            });
+            
+            // Temporarily add the clone to the document for rendering
+            clone.style.position = 'absolute';
+            clone.style.left = '-9999px';
+            clone.style.width = '800px';
+            document.body.appendChild(clone);
+            
+            const { jsPDF } = window.jspdf;
+            
+            html2canvas(clone, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                width: clone.scrollWidth,
+                height: clone.scrollHeight,
+                windowWidth: clone.scrollWidth,
+                windowHeight: clone.scrollHeight
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                // Add image to PDF
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                
+                // Save the PDF
+                pdf.save(`Quotation_${document.getElementById('quotationNumber').value}.pdf`);
+                
+                // Remove the temporary clone
+                document.body.removeChild(clone);
+                
+                showNotification('PDF downloaded successfully');
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                document.body.removeChild(clone);
+                showNotification('Error generating PDF. Please try again.', 'error');
+            });
+        }
+        
+        function printQuotation() {
+            // Create a clone of the quotation for printing
+            const quotationElement = document.getElementById('quotationPreview');
+            const printContainer = document.getElementById('printable-quotation');
+            
+            // Clone the quotation and remove input elements
+            const clone = quotationElement.cloneNode(true);
+            const inputs = clone.querySelectorAll('input');
+            inputs.forEach(input => {
+                const span = document.createElement('span');
+                span.textContent = input.value;
+                span.style.display = 'inline-block';
+                span.style.minHeight = '20px';
+                input.parentNode.replaceChild(span, input);
+            });
+            
+            // Update the print container
+            printContainer.innerHTML = '';
+            printContainer.appendChild(clone);
+            printContainer.style.display = 'block';
+            
+            // Trigger print
+            window.print();
+            
+            showNotification('Print dialog opened');
+        }
+        
+        function saveQuotation() {
+            const quotationData = {
+                companyName: document.getElementById('companyName').value,
+                companyAddress: document.getElementById('companyAddress').value,
+                companyContact: document.getElementById('companyContact').value,
+                customerName: document.getElementById('customerName').value,
+                customerAddress: document.getElementById('customerAddress').value,
+                quotationNumber: document.getElementById('quotationNumber').value,
+                quotationDate: document.getElementById('quotationDate').value,
+                validUntil: document.getElementById('validUntil').value,
+                taxRate: document.getElementById('taxRate').value,
+                termsConditions: document.getElementById('termsConditions').value,
+                items: []
+            };
+            
+            const rows = document.querySelectorAll('#itemsBody tr');
+            rows.forEach(row => {
+                quotationData.items.push({
+                    description: row.cells[1].querySelector('input').value,
+                    hsn: row.cells[2].querySelector('input').value,
+                    qty: row.cells[3].querySelector('input').value,
+                    rate: row.cells[4].querySelector('input').value
+                });
+            });
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(quotationData));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "quotation_data.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            
+            showNotification('Quotation data saved successfully');
+        }
+        
+        function loadQuotation() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    try {
+                        const quotationData = JSON.parse(event.target.result);
+                        
+                        document.getElementById('companyName').value = quotationData.companyName || '';
+                        document.getElementById('companyAddress').value = quotationData.companyAddress || '';
+                        document.getElementById('companyContact').value = quotationData.companyContact || '';
+                        document.getElementById('customerName').value = quotationData.customerName || '';
+                        document.getElementById('customerAddress').value = quotationData.customerAddress || '';
+                        document.getElementById('quotationNumber').value = quotationData.quotationNumber || '';
+                        document.getElementById('quotationDate').value = quotationData.quotationDate || '';
+                        document.getElementById('validUntil').value = quotationData.validUntil || '';
+                        document.getElementById('taxRate').value = quotationData.taxRate || '18';
+                        document.getElementById('termsConditions').value = quotationData.termsConditions || '';
+                        
+                        // Clear existing items
+                        const tbody = document.getElementById('itemsBody');
+                        tbody.innerHTML = '';
+                        itemCount = 0;
+                        
+                        // Add items from loaded data
+                        if (quotationData.items && quotationData.items.length > 0) {
+                            quotationData.items.forEach(item => {
+                                itemCount++;
+                                const newRow = document.createElement('tr');
+                                newRow.innerHTML = `
+                                    <td>${itemCount}</td>
+                                    <td><input type="text" value="${item.description || ''}" onchange="updatePreview()"></td>
+                                    <td><input type="text" value="${item.hsn || ''}" onchange="updatePreview()"></td>
+                                    <td><input type="number" value="${item.qty || 1}" min="0" step="1" onchange="updatePreview()"></td>
+                                    <td><input type="number" value="${item.rate || 0}" min="0" step="0.01" onchange="updatePreview()"></td>
+                                    <td>Nos</td>
+                                    <td class="amount">0.00</td>
+                                `;
+                                tbody.appendChild(newRow);
+                            });
+                        } else {
+                            // Add a default item if no items in data
+                            addItem();
+                        }
+                        
+                        updatePreview();
+                        showNotification('Quotation data loaded successfully');
+                    } catch (error) {
+                        console.error('Error loading quotation data:', error);
+                        showNotification('Error loading quotation data', 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        function newQuotation() {
+            // Reset form to default values
+            document.getElementById('companyName').value = 'Arasan E-Bikes';
+            document.getElementById('companyAddress').value = '123, Business Park, GST Road,\nChennai - 600001\nTamil Nadu, India';
+            document.getElementById('companyContact').value = 'Phone: +91-9876543210 | Email: info@arasanev.com';
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerAddress').value = '';
+            
+            // Generate new quotation number
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const randomNum = Math.floor(Math.random() * 1000);
+            document.getElementById('quotationNumber').value = `QT-${year}${month}${day}-${randomNum}`;
+            
+            // Set dates
+            document.getElementById('quotationDate').value = now.toISOString().split('T')[0];
+            
+            const validUntil = new Date(now);
+            validUntil.setDate(validUntil.getDate() + 30);
+            document.getElementById('validUntil').value = validUntil.toISOString().split('T')[0];
+            
+            document.getElementById('taxRate').value = '18';
+            document.getElementById('termsConditions').value = '1. Prices are valid for 30 days from the quotation date.\n2. Delivery within 15 days after order confirmation.\n3. Payment: 50% advance with order, 50% before delivery.\n4. Taxes extra as applicable.';
+            
+            // Clear items and add one default item
+            const tbody = document.getElementById('itemsBody');
+            tbody.innerHTML = '';
+            itemCount = 0;
+            addItem();
+            
+            updatePreview();
+            showNotification('New quotation created');
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification';
+            if (type === 'error') {
+                notification.classList.add('error');
+            } else if (type === 'warning') {
+                notification.classList.add('warning');
+            }
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            const today = new Date();
+            document.getElementById('quotationDate').value = today.toISOString().split('T')[0];
+            
+            // Set valid until date (30 days from today)
+            const validUntil = new Date(today);
+            validUntil.setDate(validUntil.getDate() + 30);
+            document.getElementById('validUntil').value = validUntil.toISOString().split('T')[0];
+            
+            updatePreview();
+            
+            // Check if mobile view and adjust display
+            if (window.innerWidth <= 992) {
+                document.getElementById('formSection').style.display = 'none';
+            }
+            
+            // After print event, hide the printable quotation
+            window.addEventListener('afterprint', function() {
+                document.getElementById('printable-quotation').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
